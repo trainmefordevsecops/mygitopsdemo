@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      securityContext:
+        runAsUser: 0
+
+      # 2. INIT CONTAINER TO FIX VOLUME PERMISSIONS
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          # Recursively set the owner and group to 1000 (the SonarQube user)
+          command: ["sh", "-c", "chown -R 1000:1000 /opt/sonarqube/data"]
+          volumeMounts:
+            - mountPath: /opt/sonarqube/data
+              name: sonarqube-data
+
+      nodeSelector:
+{{- toYaml .Values.nodeSelector | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          # 3. EXPLICITLY SET MAIN CONTAINER TO RUN AS NON-ROOT USER (1000)
+          securityContext:
+            runAsUser: 1000
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 9000
+          resources:
+{{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /opt/sonarqube/data
+              name: sonarqube-data
+      volumes:
+        - name: sonarqube-data
+          persistentVolumeClaim:
+            claimName: sonarqube-pvc
+

@@ -1,0 +1,33 @@
+replicaCount: 1
+
+image:
+  repository: sonarqube
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 9000
+  nodePort: 32000
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  storageClass: standard
+  accessModes: ["ReadWriteOnce"]
+  size: 5Gi
+
+nodeSelector:
+  deploy: "true"
+
+tolerations: []
+
+affinity: {}
+
