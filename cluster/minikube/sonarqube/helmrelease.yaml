@@ -7,7 +7,7 @@ spec:
   releaseName: sonarqube
   chart:
     spec:
-      chart: ./clusters/minikube/sonarqube-chart
+      chart: ./cluster/minikube/sonarqube-chart
       sourceRef:
         kind: GitRepository
         name: flux-system
