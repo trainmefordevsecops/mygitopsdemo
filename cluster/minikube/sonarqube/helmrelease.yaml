@@ -17,3 +17,4 @@ spec:
     # You can override values.yaml here if needed
     nodeSelector:
       deploy: "true"
+    replicaCount: 2
